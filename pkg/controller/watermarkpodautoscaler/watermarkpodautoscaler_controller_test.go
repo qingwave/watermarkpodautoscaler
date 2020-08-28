@@ -833,7 +833,7 @@ func TestDefaultWatermarkPodAutoscaler(t *testing.T) {
 			err:     fmt.Errorf("the Spec.ScaleTargetRef should be populated, currently Kind: and/or Name: are not set properly"),
 		},
 		{
-			name:    "number of MinReplicas is incorrect",
+			name:    "number of MinReplicas is missing",
 			wpaName: "test-1",
 			wpaNs:   "default",
 			spec: &v1alpha1.WatermarkPodAutoscalerSpec{
@@ -853,26 +853,26 @@ func TestDefaultWatermarkPodAutoscaler(t *testing.T) {
 			err: fmt.Errorf("watermark pod autoscaler requires the minimum number of replicas to be configured and inferior to the maximum"),
 		},
 		{
-			name:    "number of MinReplicas is incorrect",
+			name:    "tolerance is out of bounds",
 			wpaName: "test-1",
 			wpaNs:   "default",
 			spec: &v1alpha1.WatermarkPodAutoscalerSpec{
 				ScaleTargetRef: testCrossVersionObjectRef,
 				MinReplicas:    getReplicas(4),
 				MaxReplicas:    7,
-				Tolerance:      *resource.NewMilliQuantity(50, "M"),
+				Tolerance:      *resource.NewMilliQuantity(5000, resource.DecimalSI),
 			},
-			err: fmt.Errorf("Tolerance should be set as a quantity between 0 and 1, currently set to : 50e-3, which is 50"),
+			err: fmt.Errorf("Tolerance should be set as a quantity between 0 and 1, currently set to : 5, which is 500%%"),
 		},
 		{
-			name:    "number of MinReplicas is incorrect",
+			name:    "correct case",
 			wpaName: "test-1",
 			wpaNs:   "default",
 			spec: &v1alpha1.WatermarkPodAutoscalerSpec{
 				ScaleTargetRef: testCrossVersionObjectRef,
 				MinReplicas:    getReplicas(4),
 				MaxReplicas:    7,
-				Tolerance:      *resource.NewMilliQuantity(1, "DecimalSI"),
+				Tolerance:      *resource.NewMilliQuantity(500, resource.DecimalSI),
 			},
 			err: nil,
 		},
