@@ -296,21 +296,21 @@ func schema_pkg_apis_datadoghq_v1alpha1_WatermarkPodAutoscalerSpec(ref common.Re
 					"scaleUpLimitFactor": {
 						SchemaProps: spec.SchemaProps{
 							Description: "Percentage of replicas that can be added in an upscale event. Max value will set the limit at the Maximum number of Replicas.",
-							Type:        []string{"number"},
-							Format:      "double",
+							Type:        []string{"integer"},
+							Format:      "int32",
 						},
 					},
 					"scaleDownLimitFactor": {
 						SchemaProps: spec.SchemaProps{
 							Description: "Percentage of replicas that can be added in an upscale event. Max value will set the limit at the Maximum number of Replicas.",
-							Type:        []string{"number"},
-							Format:      "double",
+							Type:        []string{"integer"},
+							Format:      "int32",
 						},
 					},
 					"tolerance": {
 						SchemaProps: spec.SchemaProps{
-							Type:   []string{"number"},
-							Format: "double",
+							Description: "Parameter use to be a float, in order to support the transition seamlessly, we validate that it is ]0;1[ in the code.",
+							Ref:         ref("k8s.io/apimachinery/pkg/api/resource.Quantity"),
 						},
 					},
 					"algorithm": {
@@ -374,7 +374,7 @@ func schema_pkg_apis_datadoghq_v1alpha1_WatermarkPodAutoscalerSpec(ref common.Re
 			},
 		},
 		Dependencies: []string{
-			"github.com/DataDog/watermarkpodautoscaler/pkg/apis/datadoghq/v1alpha1.CrossVersionObjectReference", "github.com/DataDog/watermarkpodautoscaler/pkg/apis/datadoghq/v1alpha1.MetricSpec"},
+			"github.com/DataDog/watermarkpodautoscaler/pkg/apis/datadoghq/v1alpha1.CrossVersionObjectReference", "github.com/DataDog/watermarkpodautoscaler/pkg/apis/datadoghq/v1alpha1.MetricSpec", "k8s.io/apimachinery/pkg/api/resource.Quantity"},
 	}
 }
 

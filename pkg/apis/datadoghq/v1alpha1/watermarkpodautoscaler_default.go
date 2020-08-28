@@ -5,10 +5,13 @@
 
 package v1alpha1
 
-import "fmt"
+import (
+	"fmt"
+	"k8s.io/apimachinery/pkg/api/resource"
+)
 
 const (
-	defaultTolerance                       = 0.1
+	defaultTolerance                       = 1
 	defaultDownscaleForbiddenWindowSeconds = 300
 	defaultUpscaleForbiddenWindowSeconds   = 60
 	defaultScaleDownLimitFactor            = 20
@@ -29,8 +32,8 @@ func DefaultWatermarkPodAutoscaler(wpa *WatermarkPodAutoscaler) *WatermarkPodAut
 		defaultWPA.Spec.Algorithm = defaultAlgorithm
 	}
 	// TODO set defaults for high and low watermark
-	if wpa.Spec.Tolerance == 0 {
-		defaultWPA.Spec.Tolerance = defaultTolerance
+	if wpa.Spec.Tolerance.Value() == 0 {
+		defaultWPA.Spec.Tolerance = *resource.NewMilliQuantity(defaultTolerance, "m")
 	}
 	if wpa.Spec.ScaleUpLimitFactor == 0 {
 		defaultWPA.Spec.ScaleUpLimitFactor = defaultScaleUpLimitFactor
@@ -56,7 +59,7 @@ func IsDefaultWatermarkPodAutoscaler(wpa *WatermarkPodAutoscaler) bool {
 	if wpa.Spec.Algorithm == "" {
 		return false
 	}
-	if wpa.Spec.Tolerance == 0 {
+	if wpa.Spec.Tolerance.Value() == 0 {
 		return false
 	}
 	if wpa.Spec.ScaleUpLimitFactor == 0 {
