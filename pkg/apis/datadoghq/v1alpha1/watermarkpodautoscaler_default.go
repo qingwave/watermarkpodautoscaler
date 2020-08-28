@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	defaultTolerance                       = 1
+	defaultTolerance                       = 10
 	defaultDownscaleForbiddenWindowSeconds = 300
 	defaultUpscaleForbiddenWindowSeconds   = 60
 	defaultScaleDownLimitFactor            = 20
@@ -33,7 +33,7 @@ func DefaultWatermarkPodAutoscaler(wpa *WatermarkPodAutoscaler) *WatermarkPodAut
 	}
 	// TODO set defaults for high and low watermark
 	if wpa.Spec.Tolerance.Value() == 0 {
-		defaultWPA.Spec.Tolerance = *resource.NewMilliQuantity(defaultTolerance, "m")
+		defaultWPA.Spec.Tolerance = *resource.NewMilliQuantity(defaultTolerance, resource.DecimalSI)
 	}
 	if wpa.Spec.ScaleUpLimitFactor == 0 {
 		defaultWPA.Spec.ScaleUpLimitFactor = defaultScaleUpLimitFactor
