@@ -88,6 +88,9 @@ func CheckWPAValidity(wpa *WatermarkPodAutoscaler) error {
 		msg := fmt.Sprintf("watermark pod autoscaler requires the minimum number of replicas to be configured and inferior to the maximum")
 		return fmt.Errorf(msg)
 	}
+	if wpa.Spec.Tolerance.MilliValue() > 1 || wpa.Spec.Tolerance.MilliValue() < 0 {
+		return fmt.Errorf(fmt.Sprintf("Tolerance should be set as a quantity between 0 and 1, currently set to : %v, which is %d", wpa.Spec.Tolerance.String(), wpa.Spec.Tolerance.MilliValue()))
+	}
 	return checkWPAMetricsValidity(wpa)
 }
 

@@ -8,6 +8,7 @@ package watermarkpodautoscaler
 import (
 	"context"
 	"fmt"
+	assert2 "github.com/stretchr/testify/assert"
 	"reflect"
 	"testing"
 	"time"
@@ -813,6 +814,80 @@ func (f *fakeReplicaCalculator) GetResourceReplicas(logger logr.Logger, target *
 		return f.replicasFunc(metric, wpa)
 	}
 	return ReplicaCalculation{0, 0, time.Time{}}, nil
+}
+
+func TestDefaultWatermarkPodAutoscaler(t *testing.T) {
+	logf.SetLogger(logf.ZapLogger(true))
+	tests := []struct {
+		name    string
+		wpaName string
+		wpaNs   string
+		err     error
+		spec    *v1alpha1.WatermarkPodAutoscalerSpec
+	}{
+		{
+			name:    "missing scaleTarget",
+			wpaName: "test-1",
+			wpaNs:   "default",
+			spec:    &v1alpha1.WatermarkPodAutoscalerSpec{},
+			err:     fmt.Errorf("the Spec.ScaleTargetRef should be populated, currently Kind: and/or Name: are not set properly"),
+		},
+		{
+			name:    "number of MinReplicas is incorrect",
+			wpaName: "test-1",
+			wpaNs:   "default",
+			spec: &v1alpha1.WatermarkPodAutoscalerSpec{
+				ScaleTargetRef: testCrossVersionObjectRef,
+			},
+			err: fmt.Errorf("watermark pod autoscaler requires the minimum number of replicas to be configured and inferior to the maximum"),
+		},
+		{
+			name:    "number of MinReplicas is incorrect",
+			wpaName: "test-1",
+			wpaNs:   "default",
+			spec: &v1alpha1.WatermarkPodAutoscalerSpec{
+				ScaleTargetRef: testCrossVersionObjectRef,
+				MinReplicas:    getReplicas(4),
+				MaxReplicas:    3,
+			},
+			err: fmt.Errorf("watermark pod autoscaler requires the minimum number of replicas to be configured and inferior to the maximum"),
+		},
+		{
+			name:    "number of MinReplicas is incorrect",
+			wpaName: "test-1",
+			wpaNs:   "default",
+			spec: &v1alpha1.WatermarkPodAutoscalerSpec{
+				ScaleTargetRef: testCrossVersionObjectRef,
+				MinReplicas:    getReplicas(4),
+				MaxReplicas:    7,
+				Tolerance:      *resource.NewMilliQuantity(50, "M"),
+			},
+			err: fmt.Errorf("Tolerance should be set as a quantity between 0 and 1, currently set to : 50e-3, which is 50"),
+		},
+		{
+			name:    "number of MinReplicas is incorrect",
+			wpaName: "test-1",
+			wpaNs:   "default",
+			spec: &v1alpha1.WatermarkPodAutoscalerSpec{
+				ScaleTargetRef: testCrossVersionObjectRef,
+				MinReplicas:    getReplicas(4),
+				MaxReplicas:    7,
+				Tolerance:      *resource.NewMilliQuantity(1, "DecimalSI"),
+			},
+			err: nil,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			wpa := test.NewWatermarkPodAutoscaler(tt.wpaName, tt.wpaNs, &test.NewWatermarkPodAutoscalerOptions{Spec: tt.spec})
+			err := v1alpha1.CheckWPAValidity(wpa)
+			if err != nil {
+				assert.Equal(t, err.Error(), tt.err.Error())
+			} else {
+				assert2.Nil(t, tt.err)
+			}
+		})
+	}
 }
 
 func TestReconcileWatermarkPodAutoscaler_shouldScale(t *testing.T) {
