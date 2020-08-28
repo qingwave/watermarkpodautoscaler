@@ -357,7 +357,7 @@ func (r *ReconcileWatermarkPodAutoscaler) reconcileWPA(logger logr.Logger, wpa *
 		}
 
 		currentScale.Spec.Replicas = desiredReplicas
-		_, err = r.scaleClient.Scales(wpa.Namespace).Update(targetGR, currentScale)
+		_, err = r.scaleClient.Scales(wpa.Namespace).Update(context.TODO(), targetGR, currentScale, metav1.UpdateOptions{})
 		if err != nil {
 			r.eventRecorder.Eventf(wpa, corev1.EventTypeWarning, "FailedRescale", fmt.Sprintf("New size: %d; reason: %s; error: %v", desiredReplicas, rescaleReason, err.Error()))
 			setCondition(wpa, autoscalingv2.AbleToScale, corev1.ConditionFalse, "FailedUpdateScale", "the HPA controller was unable to update the target scale: %v", err)
@@ -404,7 +404,7 @@ func (r *ReconcileWatermarkPodAutoscaler) getScaleForResourceMappings(namespace,
 	for _, mapping := range mappings {
 		var err error
 		targetGR = mapping.Resource.GroupResource()
-		scale, err = r.scaleClient.Scales(namespace).Get(targetGR, name)
+		scale, err = r.scaleClient.Scales(namespace).Get(context.TODO(), targetGR, name, metav1.GetOptions{})
 		if err == nil {
 			break
 		}
