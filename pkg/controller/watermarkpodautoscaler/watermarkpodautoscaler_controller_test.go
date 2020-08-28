@@ -1021,14 +1021,14 @@ func TestCalculateScaleDownLimit(t *testing.T) {
 	}
 }
 
-func makeWPASpec(wpaMinReplicas, wpaMaxReplicas int32, scaleUpLimit, scaleDownLimit float64) *v1alpha1.WatermarkPodAutoscaler {
+func makeWPASpec(wpaMinReplicas, wpaMaxReplicas, scaleUpLimit, scaleDownLimit int32) *v1alpha1.WatermarkPodAutoscaler {
 	wpa := makeWPAScaleFactor(scaleUpLimit, scaleDownLimit)
 	wpa.Spec.MinReplicas = &wpaMinReplicas
 	wpa.Spec.MaxReplicas = wpaMaxReplicas
 	return wpa
 }
 
-func makeWPAScaleFactor(scaleUpLimit, scaleDownLimit float64) *v1alpha1.WatermarkPodAutoscaler {
+func makeWPAScaleFactor(scaleUpLimit, scaleDownLimit int32) *v1alpha1.WatermarkPodAutoscaler {
 	return &v1alpha1.WatermarkPodAutoscaler{
 		Spec: v1alpha1.WatermarkPodAutoscalerSpec{
 			ScaleDownLimitFactor: scaleDownLimit,
