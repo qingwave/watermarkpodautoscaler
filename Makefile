@@ -67,7 +67,7 @@ validate:
 
 generate: bin/operator-sdk bin/openapi-gen
 	bin/operator-sdk generate k8s
-	bin/operator-sdk generate crds
+	bin/operator-sdk generate crds --crd-version=v1beta1
 	bin/openapi-gen --logtostderr=true -o "" -i ./pkg/apis/datadoghq/v1alpha1 -O zz_generated.openapi -p ./pkg/apis/datadoghq/v1alpha1 -h ./hack/boilerplate.go.txt -r "-"
 	hack/update-codegen.sh
 

@@ -57,17 +57,15 @@ type WatermarkPodAutoscalerSpec struct {
 	// +kubebuilder:validation:Minimum=1
 	UpscaleForbiddenWindowSeconds int32 `json:"upscaleForbiddenWindowSeconds,omitempty"`
 
-	// Percentage of replicas that can be added in an upscale event. Max value will set the limit at the Maximum number of Replicas.
-	// +kubebuilder:validation:Minimum=1
-	// +kubebuilder:validation:Maximum=100
-	ScaleUpLimitFactor int32 `json:"scaleUpLimitFactor,omitempty"`
+	// Percentage of replicas that can be added in an upscale event.
+	// Parameter used to be a float, in order to support the transition seamlessly, we validate that it is ]0;100] in the code.
+	ScaleUpLimitFactor resource.Quantity `json:"scaleUpLimitFactor,omitempty"`
 
-	// Percentage of replicas that can be added in an upscale event. Max value will set the limit at the Maximum number of Replicas.
-	// +kubebuilder:validation:Minimum=1
-	// +kubebuilder:validation:Maximum=100
-	ScaleDownLimitFactor int32 `json:"scaleDownLimitFactor,omitempty"`
+	// Percentage of replicas that can be removed in an downscale event.
+	// Parameter used to be a float, in order to support the transition seamlessly, we validate that it is ]0;100[ in the code.
+	ScaleDownLimitFactor resource.Quantity `json:"scaleDownLimitFactor,omitempty"`
 
-	// Parameter use to be a float, in order to support the transition seamlessly, we validate that it is ]0;1[ in the code.
+	// Parameter used to be a float, in order to support the transition seamlessly, we validate that it is ]0;1[ in the code.
 	Tolerance resource.Quantity `json:"tolerance,omitempty"`
 
 	// computed values take the # of replicas into account

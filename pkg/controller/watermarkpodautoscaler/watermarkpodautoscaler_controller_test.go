@@ -864,7 +864,34 @@ func TestDefaultWatermarkPodAutoscaler(t *testing.T) {
 				MaxReplicas:    7,
 				Tolerance:      *resource.NewMilliQuantity(5000, resource.DecimalSI),
 			},
-			err: fmt.Errorf("Tolerance should be set as a quantity between 0 and 1, currently set to : 5, which is 500%%"),
+			err: fmt.Errorf("tolerance should be set as a quantity between 0 and 1, currently set to : 5, which is 500%%"),
+		},
+		{
+			name:    "scaleuplimitfactor is out of bounds",
+			wpaName: "test-1",
+			wpaNs:   "default",
+			spec: &v1alpha1.WatermarkPodAutoscalerSpec{
+				ScaleTargetRef: testCrossVersionObjectRef,
+				MinReplicas:    getReplicas(4),
+				MaxReplicas:    7,
+				ScaleUpLimitFactor: *resource.NewQuantity(101, resource.DecimalSI),
+				Tolerance:      *resource.NewMilliQuantity(50, resource.DecimalSI),
+			},
+			err: fmt.Errorf("scaleuplimitfactor should be set as a quantity between 0 and 100, currently set to : 101, which could yield a 101%% growth"),
+		},
+		{
+			name:    "scaledownlimitfactor is out of bounds",
+			wpaName: "test-1",
+			wpaNs:   "default",
+			spec: &v1alpha1.WatermarkPodAutoscalerSpec{
+				ScaleTargetRef: testCrossVersionObjectRef,
+				MinReplicas:    getReplicas(4),
+				MaxReplicas:    7,
+				ScaleUpLimitFactor: *resource.NewQuantity(34, resource.DecimalSI),
+				ScaleDownLimitFactor: *resource.NewQuantity(134, resource.DecimalSI),
+				Tolerance:      *resource.NewMilliQuantity(50, resource.DecimalSI),
+			},
+			err: fmt.Errorf("scaledownlimitfactor should be set as a quantity between 0 and 100 (exc.), currently set to : 134, which could yield a 134%% decrease"),
 		},
 		{
 			name:    "correct case",
@@ -1050,7 +1077,7 @@ func TestCalculateScaleUpLimit(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			c := calculateScaleUpLimit(tt.wpa, tt.currentReplicas)
-			assert.Equal(t, tt.cappedUpscale, c)
+			assert.Equal(t, c, tt.cappedUpscale)
 		})
 	}
 }
@@ -1108,8 +1135,8 @@ func makeWPASpec(wpaMinReplicas, wpaMaxReplicas, scaleUpLimit, scaleDownLimit in
 func makeWPAScaleFactor(scaleUpLimit, scaleDownLimit int32) *v1alpha1.WatermarkPodAutoscaler {
 	return &v1alpha1.WatermarkPodAutoscaler{
 		Spec: v1alpha1.WatermarkPodAutoscalerSpec{
-			ScaleDownLimitFactor: scaleDownLimit,
-			ScaleUpLimitFactor:   scaleUpLimit,
+			ScaleDownLimitFactor: *resource.NewQuantity(int64(scaleDownLimit), resource.DecimalSI),
+			ScaleUpLimitFactor:   *resource.NewQuantity(int64(scaleUpLimit), resource.DecimalSI),
 		},
 	}
 }
