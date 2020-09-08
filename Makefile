@@ -65,14 +65,25 @@ clean:
 validate:
 	bin/golangci-lint run ./...
 
-generate: bin/operator-sdk bin/openapi-gen
-	bin/operator-sdk generate k8s
-	bin/operator-sdk generate crds --crd-version=v1beta1
-	bin/openapi-gen --logtostderr=true -o "" -i ./pkg/apis/datadoghq/v1alpha1 -O zz_generated.openapi -p ./pkg/apis/datadoghq/v1alpha1 -h ./hack/boilerplate.go.txt -r "-"
-	hack/update-codegen.sh
+generate: bin/operator-sdk bin/openapi-gen generate-k8s generate-crds generate-openapi update-codegen
 
 generate-olm: bin/operator-sdk
 	bin/operator-sdk generate csv --csv-version $(VERSION:v%=%) --update-crds
+
+generate-k8s: bin/operator-sdk
+	bin/operator-sdk generate k8s
+
+generate-crds: bin/operator-sdk
+	bin/operator-sdk generate crds --crd-version=v1beta1
+
+generate-openapi: bin/openapi-gen
+	bin/openapi-gen --logtostderr=true -o "" -i ./pkg/apis/datadoghq/v1alpha1 -O zz_generated.openapi -p ./pkg/apis/datadoghq/v1alpha1 -h ./hack/boilerplate.go.txt -r "-"
+
+patch-crds: bin/yq generate-crds
+	hack/patch-crds.sh
+
+update-codegen:
+    hack/update-codegen.sh
 
 pre-release: bin/yq
 	hack/pre-release.sh $(VERSION)
